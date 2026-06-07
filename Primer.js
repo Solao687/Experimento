@@ -1,11 +1,12 @@
-// 1. Seleccionamos el elemento de la tabla por su ID (en minúsculas para coincidir con el HTML)
+// 1. Seleccionamos el tbody de la tabla de adopciones
 const contenido = document.querySelector("#contenido");
 
-// 2. Función asíncrona para consumir la API de usuarios
-async function consumirApi() {
-    const url = "https://jsonplaceholder.typicode.com/users";
+// 2. Función asíncrona para buscar los perritos
+async function consumirApiAdopciones() {
+    // NOTA: Cambia esta URL por la de tu API real de adopciones cuando la tengas.
+    // Por ahora uso esta de prueba que devuelve datos simulados de mascotas.
+    const url = "https://mocki.io/v1/de368143-4cc0-4966-9964-b49dcaefd5e7"; 
     
-    // Configuración de la petición HTTP
     const tipoApi = {
         method: 'GET',
         headers: {
@@ -14,50 +15,50 @@ async function consumirApi() {
     };
 
     try {
-        // Limpiamos el texto de "Cargando..." justo antes de renderizar los datos nuevos
-        contenido.innerHTML = ''; 
+        contenido.innerHTML = ''; // Limpiamos el cargando
         
-        // Realizamos la petición asíncrona
         const respuesta = await fetch(url, tipoApi);
         
-        // Verificamos si la respuesta del servidor fue exitosa (status 200-299)
         if (!respuesta.ok) {
             contenido.innerHTML = `
                 <tr>
-                    <td colspan="4" class="error-state">No pude extraer los datos</td>
+                    <td colspan="5" class="error-state">No se pudo cargar el listado de adopciones</td>
                 </tr>
             `;
             return;
         }
 
-        // Convertimos la respuesta a un objeto JSON utilizable
-        const lista = await respuesta.json();
+        const listaPerritos = await respuesta.json();
 
-        // Iteramos sobre el arreglo de usuarios usando un iterador de arreglos (forEach)
-        lista.forEach(dato => {
-            // Construimos la estructura de la fila de forma limpia usando Template Literals
+        // Iteramos sobre nuestra lista de mascotas
+        listaPerritos.forEach(perrito => {
+            
+            // Evaluamos el estado para darle un color bonito en el HTML
+            const claseEstado = perrito.estado.toLowerCase() === 'disponible' ? 'disponible' : 'en-proceso';
+
+            // Construimos la fila con los 5 datos solicitados
             const fila = `
                 <tr>
-                    <td>${dato.id}</td>
-                    <td>${dato.name}</td>
-                    <td>${dato.email}</td>
-                    <td>${dato.company.name}</td>
+                    <td><strong>${perrito.nombre}</strong></td>
+                    <td>${perrito.especie}</td>
+                    <td>${perrito.edad} ${perrito.edad === 1 ? 'año' : 'años'}</td>
+                    <td>${perrito.tamano}</td>
+                    <td><span class="badge ${claseEstado}">${perrito.estado}</span></td>
                 </tr>
             `;
             
-            // Concatenamos cada fila usando el operador += para acumularlas en el tbody
+            // Sumamos la fila a la tabla
             contenido.innerHTML += fila;
         });
 
     } catch (error) {
-        // En caso de que ocurra una falla de red (ej. sin conexión a internet)
         contenido.innerHTML = `
             <tr>
-                <td colspan="4" class="error-state">Error inesperado en el sistema</td>
+                <td colspan="5" class="error-state">Error de conexión al buscar las adopciones</td>
             </tr>
         `;
     }
 }
 
-// 3. Ejecutamos la función para inicializar la carga automática al abrir la página
-consumirApi();
+// 3. Inicializamos la carga de mascotas
+consumirApiAdopciones();
